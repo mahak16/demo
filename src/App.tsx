@@ -9,25 +9,23 @@ function App() {
 
   const generateStudyPlan = async (topics: Topic[]) => {
     try {
-      const response = await fetch('/server/generatePlan.js', {
+      const response = await fetch('/api/generatePlan', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json',
         },
-        credentials: 'include',
         body: JSON.stringify({ topics }),
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to fetch');
+        const errorText = await response.text();
+        throw new Error(errorText || 'Failed to fetch');
       }
-      
+
       const data = await response.json();
       setStudyPlan(data);
     } catch (err) {
-      console.error('API error:', err);
+      console.log('API error:', err);
       // Fallback to mock data if API fails
       const analyzedTopics = topics.map(topic => ({
         ...topic,
