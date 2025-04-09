@@ -9,7 +9,7 @@ function App() {
 
   const generateStudyPlan = async (topics: Topic[]) => {
     try {
-      const response = await fetch('/api/server/generatePlan.js', {
+      const response = await fetch('/server/generatePlan.js', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
