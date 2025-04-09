@@ -15,28 +15,37 @@ module.exports = async (req, res) => {
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
-    const prompt = `
-      Analyze these study topics and provide recommendations:
-      ${JSON.stringify(topics, null, 2)}
-      
-      Return a JSON response with this structure:
+    // Add safety settings
+    const safetySettings = [
       {
-        "topics": [{ id, name, confidence, timeSpent, priority }],
-        "recommendations": ["recommendation1", "recommendation2", ...],
-        "totalHours": number
-      }
-    `;
+        category: "HARM_CATEGORY_HARASSMENT",
+        threshold: "BLOCK_NONE",
+      },
+    ];
 
-    const result = await model.generateContent(prompt);
-    const response = result.response;
-    const textResult = response.text();
-    
-    // Parse the JSON response from Gemini
+    const result = await model.generateContent({
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      safetySettings,
+      generationConfig: {
+        temperature: 0.7,
+        topK: 40,
+        topP: 0.95,
+      },
+    });
+
+    if (!result.response) {
+      throw new Error('No response from Gemini API');
+    }
+
+    const textResult = result.response.text();
     const jsonResult = JSON.parse(textResult);
 
     res.json(jsonResult);
   } catch (err) {
     console.error('API Error:', err);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ 
+      error: 'Internal Server Error',
+      details: err.message 
+    });
   }
 };
